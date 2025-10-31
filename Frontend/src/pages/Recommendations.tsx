@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react';
-import { Lightbulb, Youtube, Instagram, Copy, CheckCircle } from 'lucide-react';
-import API from '../utils/api';
+import { Lightbulb, Copy, CheckCircle } from 'lucide-react';
+// Assuming API is configured to point to your backend (e.g., http://localhost:5000/api/ai)
+// import API from '../utils/api'; // Removed this line as the file is missing
 
-interface Recommendation {
-  id: string;
-  platform: 'youtube' | 'instagram';
-  image: string;
+// This interface now matches the backend response: { "ideas": [ ... ] }
+interface Idea {
+  title: string;
   caption: string;
-  tags: string[];
+  concept: string;
+  hashtags: string[];
 }
 
+// Define the backend URL
+const BACKEND_URL = 'http://localhost:5000/api/ai';
+
 export function Recommendations() {
-  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [recommendations, setRecommendations] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // A default placeholder image since the backend provides a "concept" string, not an image URL
+  const placeholderImage = (concept: string) => 
+    `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(concept)}`;
 
   useEffect(() => {
     fetchRecommendations();
@@ -22,52 +30,47 @@ export function Recommendations() {
   const fetchRecommendations = async () => {
     setLoading(true);
     try {
-      const { data } = await API.get('/recommendations');
-      setRecommendations(data);
+      // Replaced the 'API.post' call with a standard 'fetch'
+      const response = await fetch(`http://localhost:5000/api/ai/recommendations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: 'general content creation'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // The backend returns { "ideas": [...] }, so we set the 'ideas' array
+      setRecommendations(data.ideas);
+
     } catch (error) {
       console.error('Error fetching recommendations:', error);
+      // Mock data updated to match the new 'Idea' interface
       setRecommendations([
         {
-          id: '1',
-          platform: 'youtube',
-          image: 'https://images.pexels.com/photos/2387418/pexels-photo-2387418.jpeg?auto=compress&cs=tinysrgb&w=800',
+          title: 'Productivity Hacks',
           caption: 'Top 10 Productivity Hacks That Changed My Life | Time Management Tips',
-          tags: ['productivity', 'timemanagement', 'lifehacks'],
+          concept: 'Fast-paced montage of productivity tips',
+          hashtags: ['#productivity', '#timemanagement', '#lifehacks'],
         },
         {
-          id: '2',
-          platform: 'instagram',
-          image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800',
+          title: 'Morning Routine',
           caption: 'Morning routine that sets you up for success ✨ Starting the day with intention and energy!',
-          tags: ['morningroutine', 'wellness', 'selfcare'],
+          concept: 'Aesthetic "get ready with me" video',
+          hashtags: ['#morningroutine', '#wellness', '#selfcare'],
         },
         {
-          id: '3',
-          platform: 'youtube',
-          image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=800',
-          caption: 'How I Grew My Instagram to 100K Followers in 6 Months | Complete Strategy Guide',
-          tags: ['instagramgrowth', 'socialmedia', 'marketing'],
-        },
-        {
-          id: '4',
-          platform: 'instagram',
-          image: 'https://images.pexels.com/photos/1640774/pexels-photo-1640774.jpeg?auto=compress&cs=tinysrgb&w=800',
-          caption: 'Weekend vibes hitting different 🌅 Who else needs this kind of peace?',
-          tags: ['weekend', 'nature', 'peaceful'],
-        },
-        {
-          id: '5',
-          platform: 'youtube',
-          image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=800',
-          caption: 'Beginner\'s Guide to Content Creation | Camera Setup, Editing & More',
-          tags: ['contentcreation', 'tutorial', 'beginner'],
-        },
-        {
-          id: '6',
-          platform: 'instagram',
-          image: 'https://images.pexels.com/photos/1640773/pexels-photo-1640773.jpeg?auto=compress&cs=tinysrgb&w=800',
-          caption: 'Behind the scenes of today\'s shoot 📸 Creating magic one frame at a time',
-          tags: ['bts', 'photography', 'creative'],
+          title: 'Content Creation Guide',
+          caption: "Beginner's Guide to Content Creation | Camera Setup, Editing & More",
+          concept: 'Talking-head video with B-roll of gear',
+          hashtags: ['#contentcreation', '#tutorial', '#beginner'],
         },
       ]);
     } finally {
@@ -76,9 +79,19 @@ export function Recommendations() {
   };
 
   const copyCaption = (id: string, caption: string) => {
-    navigator.clipboard.writeText(caption);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    // Using document.execCommand for iFrame compatibility
+    const textArea = document.createElement('textarea');
+    textArea.value = caption;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+    document.body.removeChild(textArea);
   };
 
   if (loading) {
@@ -110,54 +123,48 @@ export function Recommendations() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recommendations.map((rec) => (
             <div
-              key={rec.id}
+              // Using rec.title as key since 'id' is not provided
+              key={rec.title}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-800 hover:shadow-2xl hover:scale-105 transition-all duration-300"
             >
               <div className="relative">
                 <img
-                  src={rec.image}
-                  alt={rec.caption}
+                  // Using placeholder image generated from the 'concept'
+                  src={placeholderImage(rec.concept)}
+                  // Using 'concept' for alt text
+                  alt={rec.concept}
                   className="w-full h-64 object-cover"
                 />
-                <div className="absolute top-4 right-4">
-                  <div
-                    className={`px-3 py-1 rounded-full flex items-center gap-2 ${
-                      rec.platform === 'youtube'
-                        ? 'bg-red-600'
-                        : 'bg-gradient-to-r from-pink-600 to-purple-600'
-                    } text-white font-semibold shadow-lg`}
-                  >
-                    {rec.platform === 'youtube' ? (
-                      <Youtube size={16} />
-                    ) : (
-                      <Instagram size={16} />
-                    )}
-                    {rec.platform === 'youtube' ? 'YouTube' : 'Instagram'}
-                  </div>
-                </div>
+                {/* Platform badge removed as it's not in the backend response */}
               </div>
 
               <div className="p-6">
-                <p className="text-gray-900 dark:text-white font-medium mb-4 leading-relaxed">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  {rec.title}
+                </h3>
+                <p className="text-gray-700 dark:text-gray-300 font-medium mb-4 leading-relaxed">
                   {rec.caption}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {rec.tags.map((tag, index) => (
+                  {/* Using rec.hashtags and rendering the tag directly (assuming it includes '#') */}
+                  {rec.hashtags.map((tag, index) => (
                     <span
                       key={index}
                       className="px-3 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full text-sm font-medium"
                     >
-                      #{tag}
+                      {/* Render tag directly, as backend provides it with '#' */}
+                      {tag}
                     </span>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => copyCaption(rec.id, rec.caption)}
+                  // Using rec.title to track copied state
+                  onClick={() => copyCaption(rec.title, rec.caption)}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-pink-600 to-yellow-400 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
                 >
-                  {copiedId === rec.id ? (
+                  {copiedId === rec.title ? (
                     <>
                       <CheckCircle size={20} />
                       Copied!
@@ -186,3 +193,4 @@ export function Recommendations() {
     </div>
   );
 }
+
