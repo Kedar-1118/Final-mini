@@ -9,8 +9,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-// #FIXME: Add the verifyJWT middleware to protect routes as needed
-router.get("/auth", startYoutubeOAuth);
+router.get("/auth", verifyJWT, startYoutubeOAuth);
 router.get("/callback", handleYoutubeOAuthCallback);
 
 router.get("/analytics", verifyJWT, getYoutubeAnalytics);
