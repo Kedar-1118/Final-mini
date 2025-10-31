@@ -11,18 +11,19 @@ const ANALYTICS_SCOPES = [
 
 export const startYoutubeOAuth = (req, res) => {
   const oauth2Client = createYoutubeOAuthClient();
-  // #FIXME: Add state parameter for security
+
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: ANALYTICS_SCOPES,
+    state: req.user._id.toString(),
   });
-  res.redirect(url);
+  res.json({ url });
 };
 
 export const handleYoutubeOAuthCallback = async (req, res) => {
   // #FIXME: Add user identification and linking logic
-  const { code } = req.query;
-  if (!code) return res.status(400).send("Missing code or state.");
+  const { code, state: user_id } = req.query;
+  if (!code || !user_id) return res.status(400).send("Missing code or state.");
 
   try {
     const oauth2Client = createYoutubeOAuthClient();
@@ -39,8 +40,10 @@ export const handleYoutubeOAuthCallback = async (req, res) => {
     if (!channel) return res.status(500).send("Channel info not found.");
 
     await LinkedAccount.findOneAndUpdate(
-      { platform: "youtube" },
+      { user_id, platform: "youtube" },
       {
+        user_id,
+        platform: "youtube",
         platform_user_id: channel.id,
         username: channel.snippet.title,
         access_token: encrypt(tokens.access_token),

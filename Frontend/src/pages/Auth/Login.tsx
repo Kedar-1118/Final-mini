@@ -22,7 +22,7 @@ export function Login() {
     setLoading(true);
     try {
       const { data } = await API.post('/users/login', formData);
-      login(data.accessToken, data.data.user._id);
+      login(data.data.accessToken, data.data.user._id);
       navigate('/home');
     } catch (error) {
       console.error('Login error:', error);

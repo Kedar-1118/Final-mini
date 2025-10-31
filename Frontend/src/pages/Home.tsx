@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Youtube, Instagram, ArrowRight, Link as LinkIcon } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import API from "../utils/api";
 
 export function Home() {
   const { username } = useAuth();
@@ -10,8 +11,15 @@ export function Home() {
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [instagramUsername, setInstagramUsername] = useState("");
 
-  const handleYoutubeConnect = () => {
-    window.location.href = "http://localhost:3000/api/v1/youtube/auth";
+  const handleYoutubeConnect = async () => {
+    const res = await API.get("youtube/auth");
+    console.log(res.data);
+
+    if (res.data.url) {
+      window.location.href = res.data.url;
+    }
+
+    setYoutubeConnected(true);
   };
 
   const handleInstagramConnect = async () => {
