@@ -9,10 +9,10 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.get("/auth/youtube", verifyJWT, startYoutubeOAuth);
-router.get("/auth/youtube/callback", handleYoutubeOAuthCallback);
+router.get("/auth", startYoutubeOAuth);
+router.get("/callback", handleYoutubeOAuthCallback);
 
-router.get("/youtube/analytics", verifyJWT, getYoutubeAnalytics);
-router.get("/youtube/comments", verifyJWT, getYoutubeComments);
+router.get("/analytics", verifyJWT, getYoutubeAnalytics);
+router.get("/comments", verifyJWT, getYoutubeComments);
 
 export default router;

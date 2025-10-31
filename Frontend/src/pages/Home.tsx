@@ -1,17 +1,17 @@
-import { useState } from 'react';
-import { Youtube, Instagram, ArrowRight, Link as LinkIcon } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Youtube, Instagram, ArrowRight, Link as LinkIcon } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export function Home() {
   const { username } = useAuth();
   const navigate = useNavigate();
   const [youtubeConnected, setYoutubeConnected] = useState(false);
   const [instagramConnected, setInstagramConnected] = useState(false);
-  const [instagramUsername, setInstagramUsername] = useState('');
+  const [instagramUsername, setInstagramUsername] = useState("");
 
   const handleYoutubeConnect = () => {
-    window.location.href = '/api/youtube-auth';
+    window.location.href = "http://localhost:3000/api/v1/youtube/auth";
   };
 
   const handleInstagramConnect = async () => {
@@ -25,7 +25,11 @@ export function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Welcome back, <span className="bg-gradient-to-r from-pink-600 to-yellow-400 bg-clip-text text-transparent">{username}</span>!
+            Welcome back,{" "}
+            <span className="bg-gradient-to-r from-pink-600 to-yellow-400 bg-clip-text text-transparent">
+              {username}
+            </span>
+            !
           </h1>
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             Connect your social media accounts to unlock powerful analytics
@@ -38,14 +42,17 @@ export function Home() {
               <Youtube className="text-white" size={32} />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">YouTube Dashboard</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              YouTube Dashboard
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Track your channel's performance, video analytics, and audience engagement
+              Track your channel's performance, video analytics, and audience
+              engagement
             </p>
 
             {youtubeConnected ? (
               <button
-                onClick={() => navigate('/youtube')}
+                onClick={() => navigate("/youtube")}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-yellow-400 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-500/50 transform hover:scale-105 transition-all"
               >
                 View Dashboard
@@ -67,14 +74,17 @@ export function Home() {
               <Instagram className="text-white" size={32} />
             </div>
 
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Instagram Dashboard</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+              Instagram Dashboard
+            </h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Analyze your profile metrics, post performance, and follower insights
+              Analyze your profile metrics, post performance, and follower
+              insights
             </p>
 
             {instagramConnected ? (
               <button
-                onClick={() => navigate('/instagram')}
+                onClick={() => navigate("/instagram")}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-yellow-400 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-500/50 transform hover:scale-105 transition-all"
               >
                 View Dashboard

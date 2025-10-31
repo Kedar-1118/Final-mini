@@ -30,7 +30,7 @@ import instagramRoutes from "./routes/instagram.route.js";
 // Routes declaration
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/linked-accounts", linkedAccountsRoutes);
-app.use("/api/v1", youtubeRoutes);
+app.use("/api/v1/youtube", youtubeRoutes);
 app.use("/api/v1/instagram", instagramRoutes);
 
 

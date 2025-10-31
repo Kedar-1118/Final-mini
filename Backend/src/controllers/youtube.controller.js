@@ -14,14 +14,13 @@ export const startYoutubeOAuth = (req, res) => {
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: ANALYTICS_SCOPES,
-    state: req.user._id.toString(),
   });
   res.redirect(url);
 };
 
 export const handleYoutubeOAuthCallback = async (req, res) => {
-  const { code, state: user_id } = req.query;
-  if (!code || !user_id) return res.status(400).send("Missing code or state.");
+  const { code } = req.query;
+  if (!code) return res.status(400).send("Missing code or state.");
 
   try {
     const oauth2Client = createYoutubeOAuthClient();
@@ -38,7 +37,7 @@ export const handleYoutubeOAuthCallback = async (req, res) => {
     if (!channel) return res.status(500).send("Channel info not found.");
 
     await LinkedAccount.findOneAndUpdate(
-      { user_id, platform: "youtube" },
+      { platform: "youtube" },
       {
         platform_user_id: channel.id,
         username: channel.snippet.title,
@@ -49,10 +48,10 @@ export const handleYoutubeOAuthCallback = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    res.redirect("http://localhost:8080/dashboard?status=success");
+    res.redirect("http://localhost:5173/youtube?status=success");
   } catch (error) {
     console.error("YouTube OAuth Callback Error:", error.message);
-    res.redirect("http://localhost:8080/dashboard?status=failure");
+    res.redirect("http://localhost:5173/youtube?status=failure");
   }
 };
 

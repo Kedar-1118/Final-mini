@@ -32,14 +32,16 @@ function App() {
                 }
               /> */}
               <Route path="/home" element={<Home />} />
-              <Route
+              {/* #FIXME : Change it  */}
+              <Route path="/youtube" element={<YouTubeDashboard />} />
+              {/* <Route
                 path="/youtube"
                 element={
                   <ProtectedRoute>
                     <YouTubeDashboard />
                   </ProtectedRoute>
                 }
-              />
+              /> */}
               <Route
                 path="/instagram"
                 element={
