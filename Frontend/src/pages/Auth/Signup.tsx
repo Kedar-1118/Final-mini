@@ -5,7 +5,7 @@ import { OTPModal } from '../../components/OTPModal';
 import API from '../../utils/api';
 
 export function Signup() {
-  const [userId,setUserId] = useState('');
+  // const [userId,setUserId] = useState('');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
@@ -27,8 +27,7 @@ export function Signup() {
         name: formData.name,
         password: formData.password
        });
-      
-      setUserId(response.data.userId);
+      localStorage.setItem('userId', response.data.data.userId);
       setShowOTP(true);
       
       
@@ -42,7 +41,8 @@ export function Signup() {
   const handleVerifyOTP = async (otp: string) => {
     setLoading(true);
     try {
-      await API.post('/users/verify-otp', { userId: userId.toString(), otp });
+      const userId = localStorage.getItem('userId');
+      await API.post('/users/verify-otp', { userId: userId, otp });
       navigate('/login');
     } catch (error) {
       console.error('Error verifying OTP:', error);

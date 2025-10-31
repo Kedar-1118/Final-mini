@@ -11,6 +11,7 @@ const ANALYTICS_SCOPES = [
 
 export const startYoutubeOAuth = (req, res) => {
   const oauth2Client = createYoutubeOAuthClient();
+  // #FIXME: Add state parameter for security
   const url = oauth2Client.generateAuthUrl({
     access_type: "offline",
     scope: ANALYTICS_SCOPES,
@@ -19,6 +20,7 @@ export const startYoutubeOAuth = (req, res) => {
 };
 
 export const handleYoutubeOAuthCallback = async (req, res) => {
+  // #FIXME: Add user identification and linking logic
   const { code } = req.query;
   if (!code) return res.status(400).send("Missing code or state.");
 
