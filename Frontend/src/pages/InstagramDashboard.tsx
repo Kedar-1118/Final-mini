@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Users, UserPlus, Image, TrendingUp } from 'lucide-react';
-import { MetricCard } from '../components/MetricCard';
-import { PostDropdown } from '../components/PostDropdown';
-import API from '../utils/api';
+import { useState, useEffect } from "react";
+import { Users, UserPlus, Image, TrendingUp } from "lucide-react";
+import { MetricCard } from "../components/MetricCard";
+import { PostDropdown } from "../components/PostDropdown";
+import API from "../utils/api";
 
 interface InstagramData {
   username: string;
@@ -21,7 +21,7 @@ interface InstagramData {
 
 export function InstagramDashboard() {
   const [data, setData] = useState<InstagramData | null>(null);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
 
   const fetchInstagramData = async () => {
@@ -29,10 +29,10 @@ export function InstagramDashboard() {
 
     setLoading(true);
     try {
-      const response = await API.get(`/instagram/${username}`);
-      setData(response.data);
+      const response = await API.get(`/instagram/user/${username}`);
+      setData(response.data.data);
     } catch (error) {
-      console.error('Error fetching Instagram data:', error);
+      console.error("Error fetching Instagram data:", error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ export function InstagramDashboard() {
                 disabled={loading}
                 className="w-full py-3 bg-gradient-to-r from-pink-600 to-yellow-400 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-500/50 transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Fetching Data...' : 'Fetch Instagram Data'}
+                {loading ? "Fetching Data..." : "Fetch Instagram Data"}
               </button>
             </div>
           </div>
@@ -102,7 +102,7 @@ export function InstagramDashboard() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <img
-              src={data.profile_pic || 'https://via.placeholder.com/150'}
+              src={data.profile_pic || "https://via.placeholder.com/150"}
               alt={data.username}
               className="w-24 h-24 rounded-full border-4 border-pink-500"
             />
@@ -121,13 +121,13 @@ export function InstagramDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <MetricCard
             title="Followers"
-            value={data.followers.toLocaleString()}
+            value={data.followers}
             icon={Users}
             color="pink"
           />
           <MetricCard
             title="Following"
-            value={data.following.toLocaleString()}
+            value={data.following}
             icon={UserPlus}
             color="blue"
           />
@@ -172,7 +172,7 @@ export function InstagramDashboard() {
                     {post.caption}
                   </p>
                   <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <span>❤️ {post.likes.toLocaleString()}</span>
+                    <span>❤️ {post.likes}</span>
                     <span>💬 {post.comments}</span>
                   </div>
                 </div>

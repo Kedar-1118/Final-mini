@@ -33,7 +33,7 @@ export function YouTubeDashboard() {
 
   const fetchAnalytics = async () => {
     try {
-      const { data } = await API.get('/youtube-analytics');
+      const { data } = await API.get('/youtube/analytics');
       setAnalytics(data);
     } catch (error) {
       console.error('Error fetching analytics:', error);
