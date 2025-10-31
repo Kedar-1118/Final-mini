@@ -35,7 +35,7 @@ export function PostDropdown({ posts }: PostDropdownProps) {
       {selectedPost && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 animate-fade-in">
           <img
-            src={selectedPost.image}
+            src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image)}`}
             alt={selectedPost.caption}
             className="w-full h-64 object-cover rounded-lg mb-4"
           />
