@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, BarChart3, Home, TrendingUp, Lightbulb, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
+import logo from '../assets/logo.svg';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +30,7 @@ export function Navbar() {
           <div className="flex items-center">
             <Link to="/home" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-to-r from-pink-600 to-yellow-400 rounded-lg flex items-center justify-center">
-                <BarChart3 className="text-white" size={24} />
+                <img src={logo} alt="Logo" className="h-8 w-auto" />
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-pink-600 to-yellow-400 bg-clip-text text-transparent">
                 SocialPulse

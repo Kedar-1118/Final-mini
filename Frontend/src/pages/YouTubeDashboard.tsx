@@ -42,7 +42,7 @@ export function YouTubeDashboard() {
 
   const fetchVideos = async () => {
     try {
-      const { data } = await API.get('/youtube-videos');
+      const { data } = await API.get('/youtube/videos');
       setVideos(data);
     } catch (error) {
       console.error('Error fetching videos:', error);
