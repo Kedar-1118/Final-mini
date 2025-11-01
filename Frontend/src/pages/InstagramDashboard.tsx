@@ -30,6 +30,7 @@ export function InstagramDashboard() {
     setLoading(true);
     try {
       const response = await API.get(`/instagram/user/${username}`);
+      console.log("Instagram API response:", response.data.data);
       setData(response.data.data);
     } catch (error) {
       console.error("Error fetching Instagram data:", error);
@@ -102,7 +103,7 @@ export function InstagramDashboard() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <img
-              src={data.profile_pic || "https://via.placeholder.com/150"}
+              src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic)}`}
               alt={data.username}
               className="w-24 h-24 rounded-full border-4 border-pink-500"
             />
@@ -163,7 +164,7 @@ export function InstagramDashboard() {
                 className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
               >
                 <img
-                  src={post.image}
+                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image)}`}
                   alt={post.caption}
                   className="w-full h-64 object-cover"
                 />
