@@ -147,11 +147,6 @@ export function LandingPage() {
           Join SocialPulse
         </Link>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-pink-600/20 py-6 text-center text-gray-500 text-sm bg-black/80">
-        © {new Date().getFullYear()} SocialPulse. All rights reserved.
-      </footer>
     </div>
   );
 };
