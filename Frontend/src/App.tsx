@@ -5,6 +5,7 @@ import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './pages/Auth/Login';
+import { LandingPage } from './pages/LandingPage';
 import { Signup } from './pages/Auth/Signup';
 import { Home } from './pages/Home';
 import { YouTubeDashboard } from './pages/YouTubeDashboard';
@@ -20,7 +21,7 @@ function App() {
           <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <Navbar />
             <Routes>
-              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route path="/" element={<LandingPage/>} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               {/* <Route

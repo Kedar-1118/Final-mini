@@ -10,6 +10,12 @@ export function Navbar() {
   const location = useLocation();
   const { isAuthenticated, username, logout } = useAuth();
 
+  // ✅ Hide navbar on specific routes
+  const hiddenRoutes = ['/', '/login', '/signup'];
+  if (hiddenRoutes.includes(location.pathname)) {
+    return null;
+  }
+
   const navLinks = [
     { name: 'Home', path: '/home', icon: Home },
     { name: 'Dashboards', path: '/youtube', icon: BarChart3 },
@@ -27,6 +33,7 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+          {/* Logo + Brand */}
           <div className="flex items-center">
             <Link to="/home" className="flex items-center space-x-2">
               <div className="w-10 h-10 bg-gradient-to-r from-pink-600 to-yellow-400 rounded-lg flex items-center justify-center">
@@ -38,6 +45,7 @@ export function Navbar() {
             </Link>
           </div>
 
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map((link) => (
               <Link
@@ -55,6 +63,7 @@ export function Navbar() {
             ))}
           </div>
 
+          {/* Desktop User + Theme */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
             <div className="flex items-center space-x-3">
@@ -70,6 +79,7 @@ export function Navbar() {
             </div>
           </div>
 
+          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
             <ThemeToggle />
             <button
@@ -82,6 +92,7 @@ export function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Dropdown Menu */}
       {isOpen && (
         <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
           <div className="px-4 py-3 space-y-1">
