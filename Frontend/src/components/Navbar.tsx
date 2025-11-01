@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, redirect, useLocation } from 'react-router-dom';
 import { Menu, X, BarChart3, Home, TrendingUp, Lightbulb, User } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
@@ -114,6 +114,7 @@ export function Navbar() {
             <button
               onClick={() => {
                 logout();
+                redirect('/');
                 setIsOpen(false);
               }}
               className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"

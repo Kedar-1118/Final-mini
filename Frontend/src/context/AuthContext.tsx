@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     // redirect to landing page can be handled in the component calling logout
-    redirect('/');
+    // redirect('/');
     setToken(null);
     setUsername(null);
   };
