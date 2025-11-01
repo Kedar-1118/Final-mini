@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
+import { redirect } from 'react-router-dom';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -39,6 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    // redirect to landing page can be handled in the component calling logout
+    redirect('/');
     setToken(null);
     setUsername(null);
   };
