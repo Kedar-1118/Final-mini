@@ -1,6 +1,12 @@
 import { Heart, Instagram, Youtube, Sparkles } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export function Footer() {
+  const location = useLocation();
+  const hideFooter = location.pathname === '/login' || location.pathname === '/signup';
+
+  if (hideFooter) return null; // 👈 Don't render footer on these pages
+
   return (
     <footer className="bg-[#0a0a0a] border-t border-pink-600/20 text-gray-400 py-10 mt-20">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
@@ -17,22 +23,13 @@ export function Footer() {
 
           {/* Center: Links */}
           <div className="flex space-x-6">
-            <a
-              href="/trendings"
-              className="hover:text-pink-400 transition-colors text-sm font-medium"
-            >
+            <a href="/trendings" className="hover:text-pink-400 transition-colors text-sm font-medium">
               Trendings
             </a>
-            <a
-              href="/recommendations"
-              className="hover:text-yellow-400 transition-colors text-sm font-medium"
-            >
+            <a href="/recommendations" className="hover:text-yellow-400 transition-colors text-sm font-medium">
               Recommendations
             </a>
-            <a
-              href="/youtube"
-              className="hover:text-pink-400 transition-colors text-sm font-medium"
-            >
+            <a href="/youtube" className="hover:text-pink-400 transition-colors text-sm font-medium">
               Dashboards
             </a>
           </div>
