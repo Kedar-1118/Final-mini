@@ -54,7 +54,7 @@ export function Trendings() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-600 to-yellow-400 rounded-2xl mb-4">
             <TrendingUp className="text-white" size={40} />

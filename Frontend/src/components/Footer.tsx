@@ -9,7 +9,7 @@ export function Footer() {
 
   return (
     <footer className="bg-[#0a0a0a] border-t border-pink-600/20 text-gray-400 py-10 mt-20">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+      <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-10">
         <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
           {/* Left: Branding */}
           <div className="text-center md:text-left">

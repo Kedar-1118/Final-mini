@@ -35,7 +35,7 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="flex flex-col md:flex-row items-center justify-between px-10 py-20 max-w-7xl mx-auto">
+      <section className="flex flex-col md:flex-row items-center justify-between px-10 py-20 max-w-[1920px] mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}

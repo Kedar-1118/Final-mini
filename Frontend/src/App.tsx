@@ -21,7 +21,7 @@ function App() {
           <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <Navbar />
             <Routes>
-              <Route path="/" element={<LandingPage/>} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               {/* <Route
@@ -33,16 +33,14 @@ function App() {
                 }
               /> */}
               <Route path="/home" element={<Home />} />
-              {/* #FIXME : Change it  */}
-              <Route path="/youtube" element={<YouTubeDashboard />} />
-              {/* <Route
+              <Route
                 path="/youtube"
                 element={
                   <ProtectedRoute>
                     <YouTubeDashboard />
                   </ProtectedRoute>
                 }
-              /> */}
+              />
               <Route
                 path="/instagram"
                 element={

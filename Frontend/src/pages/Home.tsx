@@ -1,15 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Youtube, Instagram, ArrowRight, Link as LinkIcon } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import API from "../utils/api";
 
 export function Home() {
   const { username } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [youtubeConnected, setYoutubeConnected] = useState(false);
   const [instagramConnected, setInstagramConnected] = useState(false);
   const [instagramUsername, setInstagramUsername] = useState("");
+
+  useEffect(() => {
+    const youtubeStatus = searchParams.get('youtube');
+    if (youtubeStatus === 'connected') {
+      setYoutubeConnected(true);
+      // Remove the query parameter from URL
+      searchParams.delete('youtube');
+      setSearchParams(searchParams);
+    }
+  }, [searchParams, setSearchParams]);
 
   const handleYoutubeConnect = async () => {
     const res = await API.get("youtube/auth");
@@ -30,7 +41,7 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Welcome back,{" "}

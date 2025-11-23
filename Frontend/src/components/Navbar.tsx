@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, redirect, useLocation } from 'react-router-dom';
-import { Menu, X, BarChart3, Home, TrendingUp, Lightbulb, User } from 'lucide-react';
+import { Menu, X, BarChart3, Home, TrendingUp, Lightbulb, User, LogOut } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
 import logo from '../assets/logo.svg';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, username, logout } = useAuth();
 
@@ -31,7 +32,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-lg">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo + Brand */}
           <div className="flex items-center">
@@ -51,11 +52,10 @@ export function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive(link.path)
-                    ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${isActive(link.path)
+                  ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
               >
                 <link.icon size={18} />
                 <span className="font-medium">{link.name}</span>
@@ -66,16 +66,34 @@ export function Navbar() {
           {/* Desktop User + Theme */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <div className="flex items-center space-x-3">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">{username}</p>
-              </div>
+            <div className="relative">
               <button
-                onClick={logout}
-                className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <User size={20} />
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{username}</p>
+                </div>
+                <div className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                  <User size={20} />
+                </div>
               </button>
+
+              {/* Dropdown Menu */}
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-1 animate-in fade-in zoom-in-95 duration-200">
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsUserMenuOpen(false);
+                    }}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -101,11 +119,10 @@ export function Navbar() {
                 key={link.path}
                 to={link.path}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive(link.path)
-                    ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive(link.path)
+                  ? 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
               >
                 <link.icon size={20} />
                 <span className="font-medium">{link.name}</span>

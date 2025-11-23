@@ -23,17 +23,20 @@ export function InstagramDashboard() {
   const [data, setData] = useState<InstagramData | null>(null);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchInstagramData = async () => {
     if (!username.trim()) return;
 
     setLoading(true);
+    setError(null);
     try {
       const response = await API.get(`/instagram/user/${username}`);
       console.log("Instagram API response:", response.data.data);
       setData(response.data.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching Instagram data:", error);
+      setError(error.response?.data?.message || "Failed to fetch Instagram data. Please check the username or try again later.");
     } finally {
       setLoading(false);
     }
@@ -81,6 +84,11 @@ export function InstagramDashboard() {
               >
                 {loading ? "Fetching Data..." : "Fetch Instagram Data"}
               </button>
+              {error && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-center">
+                  <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -90,7 +98,7 @@ export function InstagramDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Instagram Analytics
@@ -103,7 +111,7 @@ export function InstagramDashboard() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <img
-              src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic)}`}
+              src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic || "")}`}
               alt={data.username}
               className="w-24 h-24 rounded-full border-4 border-pink-500"
             />
@@ -164,7 +172,7 @@ export function InstagramDashboard() {
                 className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
               >
                 <img
-                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image)}`}
+                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image || "")}`}
                   alt={post.caption}
                   className="w-full h-64 object-cover"
                 />

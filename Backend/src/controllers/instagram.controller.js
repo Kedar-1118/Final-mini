@@ -142,11 +142,12 @@ export const refreshUserData = AsyncHandler(async (req, res) => {
 
 export const getUserData = AsyncHandler(async (req, res) => {
   const { username } = req.params;
-  const user = await InstagramUser.findOne({ username });
-  if (!user) throw new ApiError(404, "User not found");
+
+  // Fetch directly from RapidAPI
+  const profileData = await getProfileAndPosts(username);
 
   return res.status(200).json(
-    new ApiResponse(200, user, "User data fetched successfully from DB")
+    new ApiResponse(200, profileData, "User data fetched successfully from API")
   );
 });
 

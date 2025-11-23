@@ -20,7 +20,7 @@ export function Recommendations() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // A default placeholder image since the backend provides a "concept" string, not an image URL
-  const placeholderImage = (concept: string) => 
+  const placeholderImage = (concept: string) =>
     `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(concept)}`;
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function Recommendations() {
       }
 
       const data = await response.json();
-      
+
       // The backend returns { "ideas": [...] }, so we set the 'ideas' array
       setRecommendations(data.ideas);
 
@@ -107,7 +107,7 @@ export function Recommendations() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-pink-600 to-yellow-400 rounded-2xl mb-4">
             <Lightbulb className="text-white" size={40} />

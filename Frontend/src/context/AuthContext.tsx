@@ -1,10 +1,10 @@
 import { createContext, useState, useEffect, ReactNode } from 'react';
-import { redirect } from 'react-router-dom';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
   username: string | null;
+  loading: boolean;
   login: (token: string, username: string) => void;
   logout: () => void;
 }
@@ -13,13 +13,15 @@ export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   token: null,
   username: null,
-  login: () => {},
-  logout: () => {},
+  loading: true,
+  login: () => { },
+  logout: () => { },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -28,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(storedToken);
       setUsername(storedUsername);
     }
+    setLoading(false);
   }, []);
 
   const login = (newToken: string, newUsername: string) => {
@@ -52,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!token,
         token,
         username,
+        loading,
         login,
         logout,
       }}
