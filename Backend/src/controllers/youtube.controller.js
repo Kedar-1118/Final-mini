@@ -260,3 +260,24 @@ export const uploadYoutubeVideo = async (req, res) => {
   }
 };
 
+export const getChannelDetails = async (req, res) => {
+  try {
+    const { client } = await getValidClient(req.user._id);
+    const youtube = google.youtube({ version: "v3", auth: client });
+
+    const { data } = await youtube.channels.list({
+      part: "snippet,brandingSettings,statistics",
+      mine: true,
+    });
+
+    if (!data.items || data.items.length === 0) {
+      return res.status(404).json({ error: "Channel not found." });
+    }
+
+    res.json(data.items[0]);
+  } catch (error) {
+    console.error("YouTube Channel Details Error:", error.message);
+    res.status(500).json({ error: "Failed to fetch channel details." });
+  }
+};
+

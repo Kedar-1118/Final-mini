@@ -44,7 +44,7 @@ export const registerUser = AsyncHandler(async (req, res) => {
   //   console.log("Registered User:", registeredUser);
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); 
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
   const otpRecord = new OTP({
     user_id: registeredUser._id,
     otp: otpCode,
@@ -205,8 +205,31 @@ export const logoutUser = AsyncHandler(async (req, res) => {
   };
 
   return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
     .json(new ApiResponse(200, {}, "User logged out successfully"));
+});
+
+export const getCurrentUser = AsyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User fetched successfully"));
+});
+
+export const updateAccountDetails = AsyncHandler(async (req, res) => {
+  const { name, email, instaUsername } = req.body;
+
+  if (!name && !email && !instaUsername) {
+    throw new ApiError(400, "At least one field is required to update");
+  }
+
+  const user = await User.findById(req.user?._id);
+
+  if (name) user.name = name;
+  if (email) user.email = email;
+  if (instaUsername) user.instaUsername = instaUsername;
+
+  await user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"));
 });

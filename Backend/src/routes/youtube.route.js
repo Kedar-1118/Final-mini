@@ -10,6 +10,7 @@ import {
   getYoutubeVideos,
   uploadYoutubeVideo,
   updateYoutubeVideo,
+  getChannelDetails,
 } from "../controllers/youtube.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -39,6 +40,7 @@ router.get("/callback", handleYoutubeOAuthCallback);
 // Analytics routes
 router.get("/analytics", verifyJWT, getYoutubeAnalytics);
 router.get("/comments", verifyJWT, getYoutubeComments);
+router.get("/channel", verifyJWT, getChannelDetails);
 
 // Video management routes
 router.get("/videos", verifyJWT, getYoutubeVideos);

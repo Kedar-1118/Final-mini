@@ -30,6 +30,10 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    instaUsername: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

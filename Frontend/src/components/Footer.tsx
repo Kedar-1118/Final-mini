@@ -5,70 +5,75 @@ export function Footer() {
   const location = useLocation();
   const hideFooter = location.pathname === '/login' || location.pathname === '/signup';
 
-  if (hideFooter) return null; // 👈 Don't render footer on these pages
+  if (hideFooter) return null;
 
   return (
-    <footer className="bg-[#0a0a0a] border-t border-pink-600/20 text-gray-400 py-10 mt-20">
+    <footer className="bg-gray-900 dark:bg-black border-t border-gray-800 py-16 mt-auto transition-colors duration-300">
       <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-10">
-        <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+
           {/* Left: Branding */}
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-yellow-400">
-              SocialPulse
+            <h2 className="text-3xl font-bold text-white tracking-tight">
+              Social<span className="text-pink-500">Pulse</span>
             </h2>
-            <p className="text-sm text-gray-500 mt-2 max-w-sm">
-              Empowering creators with insights, trends, and AI-driven recommendations.
+            <p className="text-sm text-gray-400 mt-4 max-w-xs mx-auto md:mx-0 leading-relaxed">
+              Empowering creators with AI-driven insights and real-time trends.
+              <br />
+              Build your audience, smarter.
             </p>
           </div>
 
-          {/* Center: Links */}
-          <div className="flex space-x-6">
-            <a href="/trendings" className="hover:text-pink-400 transition-colors text-sm font-medium">
+          {/* Center: Navigation */}
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-8">
+            <a href="/trendings" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
               Trendings
             </a>
-            <a href="/recommendations" className="hover:text-yellow-400 transition-colors text-sm font-medium">
+            <a href="/recommendations" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
               Recommendations
             </a>
-            <a href="/youtube" className="hover:text-pink-400 transition-colors text-sm font-medium">
+            <a href="/youtube" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
               Dashboards
             </a>
           </div>
 
           {/* Right: Social icons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex justify-center md:justify-end space-x-4">
             <a
               href="https://instagram.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-full bg-pink-600/10 hover:bg-pink-600/30 transition"
+              className="p-3 rounded-full bg-gray-800 text-gray-400 hover:bg-pink-600 hover:text-white transition-all duration-300"
+              aria-label="Instagram"
             >
-              <Instagram size={18} className="text-pink-500" />
+              <Instagram size={20} />
             </a>
             <a
               href="https://youtube.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-full bg-yellow-500/10 hover:bg-yellow-500/30 transition"
+              className="p-3 rounded-full bg-gray-800 text-gray-400 hover:bg-red-600 hover:text-white transition-all duration-300"
+              aria-label="YouTube"
             >
-              <Youtube size={18} className="text-yellow-400" />
+              <Youtube size={20} />
             </a>
             <a
               href="#ai"
-              className="p-2 rounded-full bg-pink-600/10 hover:bg-pink-600/30 transition"
+              className="p-3 rounded-full bg-gray-800 text-gray-400 hover:bg-yellow-500 hover:text-white transition-all duration-300"
+              aria-label="AI Features"
             >
-              <Sparkles size={18} className="text-pink-500" />
+              <Sparkles size={20} />
             </a>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-pink-600/20 mt-8 pt-6 text-center text-sm text-gray-500">
-          <p className="flex items-center justify-center gap-2">
-            Made with{" "}
-            <Heart size={14} className="text-pink-500 fill-pink-500 animate-pulse" />{" "}
-            by <span className="text-yellow-400 font-semibold">SocialPulse Team</span>
+        {/* Divider & Copyright */}
+        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col items-center">
+          <p className="flex items-center gap-2 text-sm text-gray-500">
+            Made with <Heart size={14} className="text-pink-500 fill-pink-500 animate-pulse" /> by
+            <span className="font-semibold text-gray-300">SocialPulse Team</span>
           </p>
-          <p className="mt-2 text-xs text-gray-600 dark:text-gray-500">
+          <p className="mt-2 text-xs text-gray-600">
             © {new Date().getFullYear()} SocialPulse. All rights reserved.
           </p>
         </div>

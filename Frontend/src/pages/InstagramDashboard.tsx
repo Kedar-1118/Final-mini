@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Users, UserPlus, Image, TrendingUp } from "lucide-react";
+import { Users, UserPlus, Image, TrendingUp, Edit2 } from "lucide-react";
 import { MetricCard } from "../components/MetricCard";
 import { PostDropdown } from "../components/PostDropdown";
 import API from "../utils/api";
@@ -24,16 +24,51 @@ export function InstagramDashboard() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const fetchInstagramData = async () => {
-    if (!username.trim()) return;
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await API.get("/users/current-user");
+      const user = response.data.data;
+      if (user.instaUsername) {
+        setUsername(user.instaUsername);
+        fetchInstagramData(user.instaUsername);
+      }
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  };
+
+  const saveInstaUsername = async (newUsername: string) => {
+    try {
+      await API.patch("/users/update-account", { instaUsername: newUsername });
+    } catch (error) {
+      console.error("Error updating insta username:", error);
+    }
+  };
+
+  const fetchInstagramData = async (userToFetch = username) => {
+    if (!userToFetch.trim()) return;
 
     setLoading(true);
     setError(null);
     try {
-      const response = await API.get(`/instagram/user/${username}`);
+      const response = await API.get(`/instagram/user/${userToFetch}`);
       console.log("Instagram API response:", response.data.data);
       setData(response.data.data);
+      if (userToFetch !== username) {
+        saveInstaUsername(userToFetch);
+      } else if (!data && userToFetch === username) {
+        // Initial load or manual fetch where username matches state but data is missing
+        // We might want to save it if it wasn't saved before, but fetchCurrentUser handles the initial check.
+        // If the user manually types a username and clicks fetch, we should save it.
+        saveInstaUsername(userToFetch);
+      }
+
     } catch (error: any) {
       console.error("Error fetching Instagram data:", error);
       setError(error.response?.data?.message || "Failed to fetch Instagram data. Please check the username or try again later.");
@@ -41,6 +76,10 @@ export function InstagramDashboard() {
       setLoading(false);
     }
   };
+
+  const handleManualFetch = () => {
+    fetchInstagramData(username);
+  }
 
   const calculateEngagementRate = () => {
     if (!data || data.posts.length === 0) return 0;
@@ -52,7 +91,7 @@ export function InstagramDashboard() {
     return ((avgEngagement / data.followers) * 100).toFixed(2);
   };
 
-  if (!data) {
+  if (!data && !loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,7 +117,7 @@ export function InstagramDashboard() {
                 className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
               <button
-                onClick={fetchInstagramData}
+                onClick={handleManualFetch}
                 disabled={loading}
                 className="w-full py-3 bg-gradient-to-r from-pink-600 to-yellow-400 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-pink-500/50 transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -96,99 +135,140 @@ export function InstagramDashboard() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Instagram Analytics
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Analyze your profile metrics and post performance
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <img
-              src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic || "")}`}
-              alt={data.username}
-              className="w-24 h-24 rounded-full border-4 border-pink-500"
-            />
-            <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {data.full_name || data.username}
-              </h2>
-              <p className="text-pink-600 dark:text-pink-400 font-medium mb-2">
-                @{data.username}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400">{data.bio}</p>
-            </div>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Instagram Analytics
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Analyze your profile metrics and post performance
+            </p>
+          </div>
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-lg border border-gray-200 dark:border-gray-800">
+            <span className="text-gray-500 dark:text-gray-400 text-sm">Analyzing:</span>
+            {isEditing ? (
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => {
+                  setIsEditing(false);
+                  if (username) handleManualFetch();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsEditing(false);
+                    if (username) handleManualFetch();
+                  }
+                }}
+                autoFocus
+                className="bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white font-medium p-0 w-32"
+              />
+            ) : (
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsEditing(true)}>
+                <span className="text-gray-900 dark:text-white font-medium">@{username}</span>
+                <Edit2 size={14} className="text-gray-400" />
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
-            title="Followers"
-            value={data.followers}
-            icon={Users}
-            color="pink"
-          />
-          <MetricCard
-            title="Following"
-            value={data.following}
-            icon={UserPlus}
-            color="blue"
-          />
-          <MetricCard
-            title="Total Posts"
-            value={data.posts.length}
-            icon={Image}
-            color="green"
-          />
-          <MetricCard
-            title="Engagement Rate"
-            value={`${calculateEngagementRate()}%`}
-            icon={TrendingUp}
-            color="yellow"
-          />
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Post Analytics
-          </h2>
-          <PostDropdown posts={data.posts} />
-        </div>
-
-        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Recent Posts
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.posts.slice(0, 6).map((post, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
-              >
+        {data && (
+          <>
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
+              <div className="flex flex-col md:flex-row items-center gap-6">
                 <img
-                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image || "")}`}
-                  alt={post.caption}
-                  className="w-full h-64 object-cover"
+                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic || "")}`}
+                  alt={data.username}
+                  className="w-24 h-24 rounded-full border-4 border-pink-500"
                 />
-                <div className="p-4">
-                  <p className="text-gray-900 dark:text-white font-medium mb-3 line-clamp-2">
-                    {post.caption}
+                <div className="flex-1 text-center md:text-left">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {data.full_name || data.username}
+                  </h2>
+                  <p className="text-pink-600 dark:text-pink-400 font-medium mb-2">
+                    @{data.username}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                    <span>❤️ {post.likes}</span>
-                    <span>💬 {post.comments}</span>
-                  </div>
+                  <p className="text-gray-600 dark:text-gray-400">{data.bio}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <MetricCard
+                title="Followers"
+                value={data.followers}
+                icon={Users}
+                color="pink"
+              />
+              <MetricCard
+                title="Following"
+                value={data.following}
+                icon={UserPlus}
+                color="blue"
+              />
+              <MetricCard
+                title="Total Posts"
+                value={data.posts.length}
+                icon={Image}
+                color="green"
+              />
+              <MetricCard
+                title="Engagement Rate"
+                value={`${calculateEngagementRate()}%`}
+                icon={TrendingUp}
+                color="yellow"
+              />
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Post Analytics
+              </h2>
+              <PostDropdown posts={data.posts} />
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                Recent Posts
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {data.posts.slice(0, 6).map((post, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
+                  >
+                    <img
+                      src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image || "")}`}
+                      alt={post.caption}
+                      className="w-full h-64 object-cover"
+                    />
+                    <div className="p-4">
+                      <p className="text-gray-900 dark:text-white font-medium mb-3 line-clamp-2">
+                        {post.caption}
+                      </p>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span>❤️ {post.likes}</span>
+                        <span>💬 {post.comments}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
