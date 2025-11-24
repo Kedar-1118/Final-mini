@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Lightbulb, Copy, CheckCircle } from 'lucide-react';
-// Assuming API is configured to point to your backend (e.g., http://localhost:5000/api/ai)
-// import API from '../utils/api'; // Removed this line as the file is missing
+import { useState, useEffect } from "react";
+import { Lightbulb, Copy, CheckCircle } from "lucide-react";
+import API from "../utils/api";
 
 // This interface now matches the backend response: { "ideas": [ ... ] }
 interface Idea {
@@ -11,17 +10,20 @@ interface Idea {
   hashtags: string[];
 }
 
-// Define the backend URL
-const BACKEND_URL = 'http://localhost:5000/api/ai';
-
 export function Recommendations() {
   const [recommendations, setRecommendations] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // A default placeholder image since the backend provides a "concept" string, not an image URL
-  const placeholderImage = (concept: string) =>
-    `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(concept)}`;
+  const placeholderImage = (concept: string) => {
+    const baseUrl = `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(
+      concept
+    )}`;
+
+    // Pass the external URL through your image proxy
+    return `http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(baseUrl)}`;
+  };
 
   useEffect(() => {
     fetchRecommendations();
@@ -31,15 +33,21 @@ export function Recommendations() {
     setLoading(true);
     try {
       // Replaced the 'API.post' call with a standard 'fetch'
-      const response = await fetch(`http://localhost:5000/api/ai/recommendations`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          topic: 'general content creation'
-        }),
+      const res = await API.post("/ai/recommendations", {
+        topic: "general content creation",
       });
+      // Normalize axios-like responses to a fetch-like Response used below
+      let response: any;
+      if (res && typeof res.status === "number" && "data" in res) {
+        response = {
+          ok: res.status >= 200 && res.status < 300,
+          status: res.status,
+          json: async () => res.data,
+        };
+      } else {
+        // assume it's already a fetch Response
+        response = res;
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -49,28 +57,30 @@ export function Recommendations() {
 
       // The backend returns { "ideas": [...] }, so we set the 'ideas' array
       setRecommendations(data.ideas);
-
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      console.error("Error fetching recommendations:", error);
       // Mock data updated to match the new 'Idea' interface
       setRecommendations([
         {
-          title: 'Productivity Hacks',
-          caption: 'Top 10 Productivity Hacks That Changed My Life | Time Management Tips',
-          concept: 'Fast-paced montage of productivity tips',
-          hashtags: ['#productivity', '#timemanagement', '#lifehacks'],
+          title: "Productivity Hacks",
+          caption:
+            "Top 10 Productivity Hacks That Changed My Life | Time Management Tips",
+          concept: "Fast-paced montage of productivity tips",
+          hashtags: ["#productivity", "#timemanagement", "#lifehacks"],
         },
         {
-          title: 'Morning Routine',
-          caption: 'Morning routine that sets you up for success ✨ Starting the day with intention and energy!',
+          title: "Morning Routine",
+          caption:
+            "Morning routine that sets you up for success ✨ Starting the day with intention and energy!",
           concept: 'Aesthetic "get ready with me" video',
-          hashtags: ['#morningroutine', '#wellness', '#selfcare'],
+          hashtags: ["#morningroutine", "#wellness", "#selfcare"],
         },
         {
-          title: 'Content Creation Guide',
-          caption: "Beginner's Guide to Content Creation | Camera Setup, Editing & More",
-          concept: 'Talking-head video with B-roll of gear',
-          hashtags: ['#contentcreation', '#tutorial', '#beginner'],
+          title: "Content Creation Guide",
+          caption:
+            "Beginner's Guide to Content Creation | Camera Setup, Editing & More",
+          concept: "Talking-head video with B-roll of gear",
+          hashtags: ["#contentcreation", "#tutorial", "#beginner"],
         },
       ]);
     } finally {
@@ -80,16 +90,16 @@ export function Recommendations() {
 
   const copyCaption = (id: string, caption: string) => {
     // Using document.execCommand for iFrame compatibility
-    const textArea = document.createElement('textarea');
+    const textArea = document.createElement("textarea");
     textArea.value = caption;
     document.body.appendChild(textArea);
     textArea.select();
     try {
-      document.execCommand('copy');
+      document.execCommand("copy");
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
     document.body.removeChild(textArea);
   };
@@ -99,7 +109,9 @@ export function Recommendations() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-pink-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading recommendations...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading recommendations...
+          </p>
         </div>
       </div>
     );
@@ -193,4 +205,3 @@ export function Recommendations() {
     </div>
   );
 }
-
