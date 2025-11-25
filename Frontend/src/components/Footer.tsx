@@ -8,7 +8,7 @@ export function Footer() {
   if (hideFooter) return null;
 
   return (
-    <footer className="bg-gray-900 dark:bg-black border-t border-gray-800 py-16 mt-auto transition-colors duration-300">
+    <footer className="bg-gray-700 dark:bg-black border-t border-gray-800 py-16 mt-auto transition-colors duration-300">
       <div className="max-w-[1920px] mx-auto px-6 sm:px-8 lg:px-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
 
