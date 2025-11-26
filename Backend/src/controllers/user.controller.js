@@ -233,3 +233,77 @@ export const updateAccountDetails = AsyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
+
+export const forgotPassword = AsyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+  // Clean up existing OTPs of this type
+  await OTP.deleteMany({
+    user_id: user._id,
+    type: "PASSWORD_RESET",
+  });
+
+  const otpRecord = new OTP({
+    user_id: user._id,
+    otp: otpCode,
+    expires_at: otpExpiry,
+    type: "PASSWORD_RESET",
+  });
+  await otpRecord.save();
+
+  await sendVerificationEmail(user.email, user.name, otpCode);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset OTP sent to email"));
+});
+
+export const resetPassword = AsyncHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  if ([email, otp, newPassword].some((field) => !field?.trim())) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const otpRecord = await OTP.findOne({
+    user_id: user._id,
+    type: "PASSWORD_RESET",
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(400, "Invalid or expired OTP");
+  }
+
+  const isOTPValid = await otpRecord.compareOTP(otp);
+  if (!isOTPValid) {
+    throw new ApiError(400, "Invalid OTP");
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  await OTP.deleteMany({
+    user_id: user._id,
+    type: "PASSWORD_RESET",
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Password reset successfully"));
+});
