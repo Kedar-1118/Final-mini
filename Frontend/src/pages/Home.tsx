@@ -59,7 +59,7 @@ export function Home() {
             let engagementRate = "0";
             if (instaData.posts && instaData.posts.length > 0) {
               const totalEngagement = instaData.posts.reduce(
-                (sum: number, post: any) => sum + post.likes + post.comments,
+                (sum: number, post: { likes: number; comments: number }) => sum + post.likes + post.comments,
                 0
               );
               engagementRate = ((totalEngagement / instaData.posts.length / instaData.followers) * 100).toFixed(2);
@@ -89,10 +89,10 @@ export function Home() {
           if (ytRes.data && ytRes.data.rows && ytRes.data.rows.length > 0) {
             setYoutubeConnected(true);
             // Aggregating rows for simple display
-            const totalViews = ytRes.data.rows.reduce((acc: number, row: any) => acc + row[0], 0);
-            const totalSubsGained = ytRes.data.rows.reduce((acc: number, row: any) => acc + row[3], 0);
-            const totalSubsLost = ytRes.data.rows.reduce((acc: number, row: any) => acc + row[4], 0);
-            const totalWatchTime = ytRes.data.rows.reduce((acc: number, row: any) => acc + row[5], 0);
+            const totalViews = ytRes.data.rows.reduce((acc: number, row: (string | number)[]) => acc + Number(row[0]), 0);
+            const totalSubsGained = ytRes.data.rows.reduce((acc: number, row: (string | number)[]) => acc + Number(row[3]), 0);
+            const totalSubsLost = ytRes.data.rows.reduce((acc: number, row: (string | number)[]) => acc + Number(row[4]), 0);
+            const totalWatchTime = ytRes.data.rows.reduce((acc: number, row: (string | number)[]) => acc + Number(row[5]), 0);
 
             // Get real subscriber count from channel details if available
             const realSubscriberCount = channelRes.data ? parseInt(channelRes.data.statistics.subscriberCount) : 0;

@@ -162,6 +162,14 @@ export function Navbar() {
               {/* Dropdown Menu */}
               {isUserMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 py-1 animate-in fade-in zoom-in-95 duration-200">
+                  <Link
+                    to="/settings"
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <User size={16} />
+                    <span>Settings</span>
+                  </Link>
                   <button
                     onClick={() => {
                       logout();

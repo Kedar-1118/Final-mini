@@ -2,6 +2,7 @@ import { google } from "googleapis";
 import { createYoutubeOAuthClient } from "../utils/youtubeAuth.js";
 import { LinkedAccount } from "../models/linkedAccount.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
+import { config } from "../config/env.config.js";
 
 const ANALYTICS_SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -59,10 +60,10 @@ export const handleYoutubeOAuthCallback = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    res.redirect("http://localhost:5173/home?youtube=connected");
+    res.redirect(`${config.frontendUrl}/home?youtube=connected`);
   } catch (error) {
     console.error("YouTube OAuth Callback Error:", error.message);
-    res.redirect("http://localhost:5173/home?youtube=error");
+    res.redirect(`${config.frontendUrl}/home?youtube=error`);
   }
 };
 

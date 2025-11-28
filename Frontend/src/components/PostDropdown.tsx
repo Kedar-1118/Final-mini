@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, Heart, MessageCircle } from 'lucide-react';
+import { config } from '../config/config';
 
 interface Post {
   caption: string;
@@ -35,7 +36,7 @@ export function PostDropdown({ posts }: PostDropdownProps) {
       {selectedPost && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 animate-fade-in">
           <img
-            src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image)}`}
+            src={`${config.apiBaseUrl}/proxy/image?url=${encodeURIComponent(selectedPost.image)}`}
             alt={selectedPost.caption}
             className="w-full h-64 object-cover rounded-lg mb-4"
           />

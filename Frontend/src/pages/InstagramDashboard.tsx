@@ -3,6 +3,7 @@ import { Users, UserPlus, Image, TrendingUp, Edit2 } from "lucide-react";
 import { MetricCard } from "../components/MetricCard";
 import { PostDropdown } from "../components/PostDropdown";
 import API from "../utils/api";
+import { config } from "../config/config";
 
 interface InstagramData {
   username: string;
@@ -69,9 +70,12 @@ export function InstagramDashboard() {
         saveInstaUsername(userToFetch);
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error fetching Instagram data:", error);
-      setError(error.response?.data?.message || "Failed to fetch Instagram data. Please check the username or try again later.");
+      const message = error instanceof Error && 'response' in error && typeof (error as any).response === 'object' && (error as any).response?.data?.message
+        ? (error as any).response.data.message
+        : "Failed to fetch Instagram data. Please check the username or try again later.";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -189,7 +193,7 @@ export function InstagramDashboard() {
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <img
-                  src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(data.profile_pic || "")}`}
+                  src={`${config.apiBaseUrl}/proxy/image?url=${encodeURIComponent(data.profile_pic || "")}`}
                   alt={data.username}
                   className="w-24 h-24 rounded-full border-4 border-pink-500"
                 />
@@ -250,7 +254,7 @@ export function InstagramDashboard() {
                     className="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow"
                   >
                     <img
-                      src={`http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(post.image || "")}`}
+                      src={`${config.apiBaseUrl}/proxy/image?url=${encodeURIComponent(post.image || "")}`}
                       alt={post.caption}
                       className="w-full h-64 object-cover"
                     />

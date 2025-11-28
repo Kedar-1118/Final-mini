@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Eye, ThumbsUp, MessageSquare, Clock, Users, Upload, Edit2, X, LayoutGrid, List, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
+import { Eye, ThumbsUp, MessageSquare, Clock, Users, Upload, Edit2, X, Image as ImageIcon, Video as VideoIcon } from 'lucide-react';
 import { MetricCard } from '../components/MetricCard';
 import API from '../utils/api';
 
@@ -117,14 +117,14 @@ export function YouTubeDashboard() {
         return;
       }
 
-      const totals: any = {};
-      const headers = data.columnHeaders.map((h: any) => h.name);
+      const totals: Record<string, number> = {};
+      const headers = data.columnHeaders.map((h: { name: string }) => h.name);
 
-      data.rows.forEach((row: any[]) => {
+      data.rows.forEach((row: (string | number)[]) => {
         headers.forEach((header: string, index: number) => {
           if (header === 'day') return;
           if (!totals[header]) totals[header] = 0;
-          totals[header] += parseFloat(row[index]) || 0;
+          totals[header] += parseFloat(String(row[index])) || 0;
         });
       });
 
@@ -137,9 +137,12 @@ export function YouTubeDashboard() {
         watchTime: Math.round((totals.estimatedMinutesWatched || 0) / 60),
         subscribers: Math.round(netSubscribers),
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching analytics:', error);
-      setError(error.response?.data?.error || 'Failed to load YouTube analytics.');
+      const errorMessage = error instanceof Error && 'response' in error && typeof (error as any).response === 'object' && (error as any).response?.data?.error
+        ? (error as any).response.data.error
+        : 'Failed to load YouTube analytics.';
+      setError(errorMessage);
     }
   };
 
@@ -148,7 +151,7 @@ export function YouTubeDashboard() {
       setVideosLoading(true);
       const { data } = await API.get('/youtube/videos');
       setVideos(data.items || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching videos:', error);
     } finally {
       setVideosLoading(false);
@@ -177,8 +180,11 @@ export function YouTubeDashboard() {
       e.currentTarget.reset();
       fetchVideos();
       setTimeout(() => setUploadStatus(''), 3000);
-    } catch (error: any) {
-      setUploadStatus('Upload failed: ' + (error.response?.data?.error || error.message));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error && 'response' in error && typeof (error as any).response === 'object'
+        ? ((error as any).response?.data?.error || (error as any).message || 'Upload failed')
+        : 'Upload failed';
+      setUploadStatus('Upload failed: ' + errorMessage);
     }
   };
 
@@ -197,7 +203,7 @@ export function YouTubeDashboard() {
       });
       setShowEditModal(false);
       fetchVideos();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating video:', error);
     }
   };
@@ -262,8 +268,8 @@ export function YouTubeDashboard() {
                     key={tab}
                     onClick={() => setActiveTab(tab as any)}
                     className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === tab
-                        ? 'text-red-600 dark:text-red-500'
-                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                      ? 'text-red-600 dark:text-red-500'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                       }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -335,26 +341,40 @@ export function YouTubeDashboard() {
 
           {/* VIDEOS TAB */}
           {activeTab === 'videos' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {videos.map((video) => {
-                const videoId = video.snippet.resourceId?.videoId || video.contentDetails?.videoId;
-                return (
-                  <div key={videoId} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden group hover:border-red-500/50 transition-all">
-                    <div className="relative aspect-video">
-                      <img src={video.snippet.thumbnails.medium.url} alt={video.snippet.title} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <button onClick={() => openEditModal(video)} className="p-2 bg-white rounded-full text-gray-900 hover:bg-gray-100"><Edit2 size={18} /></button>
+            <div>
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400">
+                  {error}
+                </div>
+              )}
+
+              {videosLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {videos.map((video) => {
+                    const videoId = video.snippet.resourceId?.videoId || video.contentDetails?.videoId;
+                    return (
+                      <div key={videoId} className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden group hover:border-red-500/50 transition-all">
+                        <div className="relative aspect-video">
+                          <img src={video.snippet.thumbnails.medium.url} alt={video.snippet.title} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <button onClick={() => openEditModal(video)} className="p-2 bg-white rounded-full text-gray-900 hover:bg-gray-100"><Edit2 size={18} /></button>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2" title={video.snippet.title}>{video.snippet.title}</h3>
+                          <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                            <span>{new Date(video.snippet.publishedAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2" title={video.snippet.title}>{video.snippet.title}</h3>
-                      <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-                        <span>{new Date(video.snippet.publishedAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Sparkles, Lightbulb, Copy, Check, Flame, ArrowRight, Share2 } from 'lucide-react';
+import { TrendingUp, Sparkles, Lightbulb, Copy, Check, Flame, ArrowRight } from 'lucide-react';
 import API from '../utils/api';
 
 interface TrendingIdea {
@@ -42,12 +42,7 @@ export function Trendings() {
       }
     } catch (error) {
       console.error('Error fetching trending data:', error);
-      // Fallback mock data
-      setTrendingIdeas(Array(12).fill(null).map((_, i) => ({
-        title: `Trending Idea ${i + 1}`,
-        description: "This is a sample description of a trending topic generated as a fallback.",
-        reason: "High engagement observed in this category recently."
-      })));
+      setTrendingIdeas([]);
     } finally {
       setLoading(false);
     }

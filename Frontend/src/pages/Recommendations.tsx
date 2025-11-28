@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Lightbulb, Copy, CheckCircle } from "lucide-react";
 import API from "../utils/api";
+import { config } from "../config/config";
 
 // This interface now matches the backend response: { "ideas": [ ... ] }
 interface Idea {
@@ -16,14 +17,8 @@ export function Recommendations() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // A default placeholder image since the backend provides a "concept" string, not an image URL
-  const placeholderImage = (concept: string) => {
-    const baseUrl = `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(
-      concept
-    )}`;
+  // placeholderImage function moved to bottom to use config
 
-    // Pass the external URL through your image proxy
-    return `http://localhost:3000/api/v1/proxy/image?url=${encodeURIComponent(baseUrl)}`;
-  };
 
   useEffect(() => {
     fetchRecommendations();
@@ -37,7 +32,7 @@ export function Recommendations() {
         topic: "general content creation",
       });
       // Normalize axios-like responses to a fetch-like Response used below
-      let response: any;
+      let response: { ok: boolean; status: number; json: () => Promise<unknown> };
       if (res && typeof res.status === "number" && "data" in res) {
         response = {
           ok: res.status >= 200 && res.status < 300,
@@ -46,7 +41,7 @@ export function Recommendations() {
         };
       } else {
         // assume it's already a fetch Response
-        response = res;
+        response = res as unknown as { ok: boolean; status: number; json: () => Promise<unknown> };
       }
 
       if (!response.ok) {
@@ -56,36 +51,27 @@ export function Recommendations() {
       const data = await response.json();
 
       // The backend returns { "ideas": [...] }, so we set the 'ideas' array
-      setRecommendations(data.ideas);
+      if (data && typeof data === 'object' && 'ideas' in data && Array.isArray((data as { ideas: unknown[] }).ideas)) {
+        setRecommendations((data as { ideas: unknown[] }).ideas);
+      } else {
+        setRecommendations([]);
+      }
     } catch (error) {
       console.error("Error fetching recommendations:", error);
-      // Mock data updated to match the new 'Idea' interface
-      setRecommendations([
-        {
-          title: "Productivity Hacks",
-          caption:
-            "Top 10 Productivity Hacks That Changed My Life | Time Management Tips",
-          concept: "Fast-paced montage of productivity tips",
-          hashtags: ["#productivity", "#timemanagement", "#lifehacks"],
-        },
-        {
-          title: "Morning Routine",
-          caption:
-            "Morning routine that sets you up for success ✨ Starting the day with intention and energy!",
-          concept: 'Aesthetic "get ready with me" video',
-          hashtags: ["#morningroutine", "#wellness", "#selfcare"],
-        },
-        {
-          title: "Content Creation Guide",
-          caption:
-            "Beginner's Guide to Content Creation | Camera Setup, Editing & More",
-          concept: "Talking-head video with B-roll of gear",
-          hashtags: ["#contentcreation", "#tutorial", "#beginner"],
-        },
-      ]);
+      // Removed mock data fallback to prevent misleading users
+      setRecommendations([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const placeholderImage = (concept: string) => {
+    const baseUrl = `https://placehold.co/600x400/EAD9F7/703290?text=${encodeURIComponent(
+      concept
+    )}`;
+
+    // Pass the external URL through your image proxy
+    return `${config.apiBaseUrl}/proxy/image?url=${encodeURIComponent(baseUrl)}`;
   };
 
   const copyCaption = (id: string, caption: string) => {

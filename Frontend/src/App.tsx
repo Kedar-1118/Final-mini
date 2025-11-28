@@ -1,80 +1,111 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
-import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider } from './context/ThemeContext';
-import { Navbar } from './components/Navbar';
-import { Footer } from './components/Footer';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import { PageTransition } from './components/PageTransition';
-import { Login } from './pages/Auth/Login';
-import { LandingPage } from './pages/LandingPage';
-import { Signup } from './pages/Auth/Signup';
-import { Home } from './pages/Home';
-import { YouTubeDashboard } from './pages/YouTubeDashboard';
-import { InstagramDashboard } from './pages/InstagramDashboard';
-import { Trendings } from './pages/Trendings';
-import { Recommendations } from './pages/Recommendations';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
+import { ThemeProvider } from "./context/ThemeContext";
+import { Navbar } from "./components/Navbar";
+import { Footer } from "./components/Footer";
+import { LandingPage } from "./pages/LandingPage";
+import { Login } from "./pages/Auth/Login";
+import { Signup } from "./pages/Auth/Signup";
+import { Home } from "./pages/Home";
+import { YouTubeDashboard } from "./pages/YouTubeDashboard";
+import { InstagramDashboard } from "./pages/InstagramDashboard";
+import { Trendings } from "./pages/Trendings";
+import { Recommendations } from "./pages/Recommendations";
+import Settings from "./pages/Settings";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { Toaster } from "react-hot-toast";
 
-function AnimatedRoutes() {
-  const location = useLocation();
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
 
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
-        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-        <Route path="/signup" element={<PageTransition><Signup /></PageTransition>} />
-        <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
-        <Route
-          path="/youtube"
-          element={
-            <ProtectedRoute>
-              <PageTransition><YouTubeDashboard /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/instagram"
-          element={
-            <ProtectedRoute>
-              <PageTransition><InstagramDashboard /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/trendings"
-          element={
-            <ProtectedRoute>
-              <PageTransition><Trendings /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/recommendations"
-          element={
-            <ProtectedRoute>
-              <PageTransition><Recommendations /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </AnimatePresence>
-  );
-}
+  if (loading) {
+    return <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
   return (
-    <ThemeProvider>
+    <Router>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-            <Navbar />
-            <AnimatedRoutes />
-            <Footer />
-          </div>
-        </Router>
+        <ThemeProvider>
+          <ErrorBoundary>
+            <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col font-sans">
+              <Navbar />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route
+                    path="/home"
+                    element={
+                      <ProtectedRoute>
+                        <Home />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/youtube"
+                    element={
+                      <ProtectedRoute>
+                        <YouTubeDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/instagram"
+                    element={
+                      <ProtectedRoute>
+                        <InstagramDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/dashboard" element={<Navigate to="/home" replace />} />
+                  <Route
+                    path="/trendings"
+                    element={
+                      <ProtectedRoute>
+                        <Trendings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recommendations"
+                    element={
+                      <ProtectedRoute>
+                        <Recommendations />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute>
+                        <Settings />
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+              </main>
+              <Footer />
+              <Toaster position="top-right" toastOptions={{
+                style: {
+                  background: '#333',
+                  color: '#fff',
+                },
+              }} />
+            </div>
+          </ErrorBoundary>
+        </ThemeProvider>
       </AuthProvider>
-    </ThemeProvider>
+    </Router>
   );
 }
 

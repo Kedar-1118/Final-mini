@@ -1,15 +1,14 @@
 import { AsyncHandler } from "../utils/wrapAsync.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { InstagramUser } from "../models/instagram.model.js";
-import { Comment } from "../models/comments.model.js";
 import axios from "axios";
+import { config } from "../config/env.config.js";
 
 async function getProfileAndPosts(username) {
   try {
     const headers = {
-      "x-rapidapi-key": process.env["x-rapidapi-key"],
-      "x-rapidapi-host": process.env["x-rapidapi-host"],
+      "x-rapidapi-key": config.rapidApi.key,
+      "x-rapidapi-host": config.rapidApi.host,
       "Content-Type": "application/json",
     };
 
@@ -47,12 +46,15 @@ async function getProfileAndPosts(username) {
   }
 }
 
-async function fetchAndStoreCommentsHelper(username, posts = []) {
-  if (!posts.length) throw new ApiError(404, "No posts found for fetching comments");
+async function fetchComments(username, posts = []) {
+  if (!posts.length) return [];
 
   const allComments = [];
 
-  for (const post of posts) {
+  // Limit to first 5 posts to avoid hitting API limits too hard
+  const postsToFetch = posts.slice(0, 5);
+
+  for (const post of postsToFetch) {
     if (!post.pk) continue;
 
     try {
@@ -61,8 +63,8 @@ async function fetchAndStoreCommentsHelper(username, posts = []) {
         {
           params: { id: post.pk },
           headers: {
-            "x-rapidapi-key": process.env["x-rapidapi-key"],
-            "x-rapidapi-host": process.env["x-rapidapi-host-cmnts"],
+            "x-rapidapi-key": config.rapidApi.key,
+            "x-rapidapi-host": config.rapidApi.hostCmnts,
           },
         }
       );
@@ -75,11 +77,7 @@ async function fetchAndStoreCommentsHelper(username, posts = []) {
         media_pk: post.pk,
       }));
 
-      if (cleanComments.length > 0) {
-        await Comment.deleteMany({ media_pk: post.pk });
-        await Comment.insertMany(cleanComments);
-        allComments.push(...cleanComments);
-      }
+      allComments.push(...cleanComments);
     } catch (err) {
       console.warn(`⚠️ Skipped post ${post.pk} due to API error`);
     }
@@ -87,58 +85,6 @@ async function fetchAndStoreCommentsHelper(username, posts = []) {
 
   return allComments;
 }
-
-export const addUsername = AsyncHandler(async (req, res) => {
-  const { username } = req.body;
-  if (!username?.trim()) throw new ApiError(400, "Username is required");
-
-  // Prevent duplicates
-  const existingUser = await InstagramUser.findOne({ username });
-  if (existingUser)
-    throw new ApiError(409, "Username already exists in database");
-
-  // Fetch data from RapidAPI
-  const profileData = await getProfileAndPosts(username);
-  const comments = await fetchAndStoreCommentsHelper(username, profileData.posts);
-
-  // Store data in DB
-  const newUser = await InstagramUser.create({
-    ...profileData,
-    commentsCount: comments.length,
-  });
-
-  return res.status(201).json(
-    new ApiResponse(201, {
-      user: newUser,
-      totalComments: comments.length,
-    }, "Instagram data fetched and stored successfully")
-  );
-});
-
-export const refreshUserData = AsyncHandler(async (req, res) => {
-  const { username } = req.params;
-  if (!username?.trim()) throw new ApiError(400, "Username is required");
-
-  const existingUser = await InstagramUser.findOne({ username });
-  if (!existingUser) throw new ApiError(404, "User not found");
-
-  // Re-fetch and overwrite
-  const profileData = await getProfileAndPosts(username);
-  const comments = await fetchAndStoreCommentsHelper(username, profileData.posts);
-
-  existingUser.set({
-    ...profileData,
-    commentsCount: comments.length,
-  });
-  await existingUser.save();
-
-  return res.status(200).json(
-    new ApiResponse(200, {
-      user: existingUser,
-      totalComments: comments.length,
-    }, "Instagram data refreshed successfully")
-  );
-});
 
 export const getUserData = AsyncHandler(async (req, res) => {
   const { username } = req.params;
@@ -153,15 +99,14 @@ export const getUserData = AsyncHandler(async (req, res) => {
 
 export const getUserComments = AsyncHandler(async (req, res) => {
   const { username } = req.params;
-  const igUser = await InstagramUser.findOne({ username });
-  if (!igUser) throw new ApiError(404, "User not found");
 
-  const mediaPks = igUser.posts.map((p) => p.pk);
-  const comments = await Comment.find({ media_pk: { $in: mediaPks } });
+  // First get posts
+  const profileData = await getProfileAndPosts(username);
 
-  if (!comments.length) throw new ApiError(404, "No comments found in DB");
+  // Then get comments
+  const comments = await fetchComments(username, profileData.posts);
 
   return res.status(200).json(
-    new ApiResponse(200, comments, "Comments fetched successfully from DB")
+    new ApiResponse(200, comments, "Comments fetched successfully from API")
   );
 });

@@ -25,8 +25,11 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
             await API.post('/users/forgot-password', { email });
             setStep('otp');
             setSuccess('OTP sent to your email.');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to send OTP.');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error && 'response' in err && typeof (err as any).response === 'object' && (err as any).response?.data?.message
+                ? (err as any).response.data.message
+                : 'Failed to send OTP.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -47,8 +50,11 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                 setNewPassword('');
                 setSuccess('');
             }, 2000);
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Failed to reset password.');
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error && 'response' in err && typeof (err as any).response === 'object' && (err as any).response?.data?.message
+                ? (err as any).response.data.message
+                : 'Failed to reset password.';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

@@ -85,21 +85,6 @@ export function LandingPage() {
           />
         </motion.div>
       </section>
-
-      {/* Trusted By Section */}
-      <section className="py-10 bg-[#111] border-y border-gray-800">
-        <div className="max-w-6xl mx-auto px-10 text-center">
-          <p className="text-gray-500 mb-6 text-sm uppercase tracking-widest">Trusted by content creators from</p>
-          <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-            {/* Placeholder logos - using text for now as we don't have SVGs */}
-            <span className="text-2xl font-bold text-white flex items-center gap-2"><Youtube className="w-6 h-6" /> YouTube</span>
-            <span className="text-2xl font-bold text-white flex items-center gap-2"><Instagram className="w-6 h-6" /> Instagram</span>
-            <span className="text-2xl font-bold text-white">TikTok</span>
-            <span className="text-2xl font-bold text-white">Twitch</span>
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
       <section id="features" className="py-20 bg-[#0a0a0a]">
         <h3 className="text-center text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-yellow-400">
@@ -186,39 +171,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-[#0a0a0a]">
-        <div className="max-w-6xl mx-auto px-10">
-          <h3 className="text-center text-3xl font-bold mb-12 text-white">
-            Loved by <span className="text-yellow-400">Creators</span>
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { name: "Alex Rivera", role: "YouTuber (500K+ Subs)", quote: "SocialPulse completely changed how I plan my content. The AI insights are scary accurate!" },
-              { name: "Sarah Jenkins", role: "Instagram Influencer", quote: "I used to guess which hashtags to use. Now I know exactly what works. My engagement has doubled." },
-              { name: "Mike Chen", role: "Content Strategist", quote: "The best all-in-one dashboard I've found. It saves me hours of manual tracking every week." }
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-[#111] p-6 rounded-2xl border border-gray-800">
-                <div className="flex items-center gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Sparkles key={star} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-300 italic mb-6">"{testimonial.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-500 rounded-full flex items-center justify-center text-black font-bold">
-                    {testimonial.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">{testimonial.name}</p>
-                    <p className="text-xs text-gray-500">{testimonial.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Testimonials Section Removed - Coming Soon */}
 
       {/* FAQ Section */}
       <section id="faq" className="py-20 bg-[#111]">
@@ -257,7 +210,7 @@ export function LandingPage() {
           Join SocialPulse Now <ArrowRight className="w-5 h-5" />
         </Link>
       </section>
-    </div>
+    </div >
   );
 };
 
