@@ -70,7 +70,7 @@ export const getRecommendations = AsyncHandler(async (req, res) => {
 
   const postsJson = JSON.stringify(simplifiedPosts).slice(0, 12000);
 
-  // 3️⃣ Call Gemini with context of user’s past content
+  // 3️⃣ Call Gemini with context of user’s past content + trends
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
   const prompt = `
@@ -79,14 +79,21 @@ You are a social media strategist for Indian Instagram creators.
 Here are some of my recent posts in JSON format:
 ${postsJson}
 
-Analyze these posts and:
+First, analyze these posts and:
 - Identify which themes, hooks, tones, and formats seem to work best.
 - Notice engagement patterns from likes and comments.
 
-Then, generate 12 NEW short-form content ideas that:
-- Match my overall style and niche.
+Then, ALSO consider broader, currently popular content patterns on Indian Instagram
+(e.g., festivals, cricket, Bollywood, exams, finance, careers, lifestyle, etc.).
+
+Using BOTH:
+- my personal content history, and
+- these wider Indian trends,
+
+generate 12 NEW short-form content ideas that:
+- Feel natural and consistent with my profile and audience.
+- Leverage trending topics, sounds, or formats where appropriate.
 - Are optimized for Indian audiences.
-- Slightly improve on what already performs well.
 
 For each idea, provide:
 1. "title" – a short, hook-style title.
@@ -94,7 +101,7 @@ For each idea, provide:
 3. "concept" – a brief description of the reel/video idea or visuals.
 4. "hashtags" – an array of 4–7 relevant hashtags as strings (with '#', e.g. "#productivity").
 
-Return STRICTLY a JSON array of objects with keys: "title", "caption", "concept", "hashtags".
+Return STRICTLY a JSON array of 12 objects with keys: "title", "caption", "concept", "hashtags".
 No markdown, no code blocks, no explanation text — only raw JSON.
 `;
 
