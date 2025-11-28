@@ -14,6 +14,7 @@ export function MetricCard({ title, value, icon: Icon, trend, color = 'pink' }: 
     yellow: 'from-yellow-500 to-yellow-600',
     blue: 'from-blue-600 to-blue-700',
     green: 'from-green-600 to-green-700',
+    purple: 'from-purple-600 to-purple-700',
   };
 
   return (

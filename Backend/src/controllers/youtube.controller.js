@@ -72,14 +72,20 @@ const getValidClient = async (user_id) => {
     user_id,
     platform: "youtube",
   });
-  if (!account) throw new Error("YouTube not linked or inactive.");
+  if (!account) {
+    const error = new Error("YouTube not linked or inactive.");
+    error.requiresReauth = true; // Flag to indicate frontend should redirect to OAuth
+    throw error;
+  }
 
   let accessToken = decrypt(account.access_token);
   const refreshToken = decrypt(account.refresh_token);
 
   if (account.expires_at && account.expires_at.getTime() < Date.now() + 60000) {
     if (!refreshToken) {
-      throw new Error("Session expired. Please reconnect your YouTube account.");
+      const error = new Error("Session expired. Please reconnect your YouTube account.");
+      error.requiresReauth = true; // Flag to indicate frontend should redirect to OAuth
+      throw error;
     }
     const oauth2Client = createYoutubeOAuthClient({
       access_token: accessToken,
@@ -123,9 +129,13 @@ export const getYoutubeAnalytics = async (req, res) => {
     });
 
     // Return raw Google API response - frontend will handle transformation
+    // console.log(data);
     res.json(data);
   } catch (error) {
     console.error("YouTube Analytics Error:", error.message);
+    if (error.requiresReauth) {
+      return res.status(401).json({ error: error.message, requiresReauth: true });
+    }
     res.status(500).json({ error: "Failed to fetch analytics." });
   }
 };
@@ -145,6 +155,9 @@ export const getYoutubeComments = async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error("YouTube Comments Error:", error.message);
+    if (error.requiresReauth) {
+      return res.status(401).json({ error: error.message, requiresReauth: true });
+    }
     res.status(500).json({ error: "Failed to fetch comments." });
   }
 };
@@ -173,9 +186,41 @@ export const getYoutubeVideos = async (req, res) => {
       maxResults: 12,
     });
 
-    res.json(videosResponse.data);
+    // Extract video IDs
+    const videoIds = videosResponse.data.items
+      .map(item => item.contentDetails?.videoId)
+      .filter(Boolean)
+      .join(',');
+
+    // Fetch statistics for all videos
+    let videosWithStats = videosResponse.data.items;
+    if (videoIds) {
+      const statsResponse = await youtube.videos.list({
+        part: "statistics",
+        id: videoIds,
+      });
+
+      // Merge statistics into video items
+      videosWithStats = videosResponse.data.items.map(item => {
+        const videoId = item.contentDetails?.videoId;
+        const stats = statsResponse.data.items?.find(v => v.id === videoId);
+        return {
+          ...item,
+          statistics: stats?.statistics || {
+            viewCount: "0",
+            likeCount: "0",
+            commentCount: "0",
+          }
+        };
+      });
+    }
+
+    res.json({ ...videosResponse.data, items: videosWithStats });
   } catch (error) {
     console.error("YouTube Videos Error:", error.message);
+    if (error.requiresReauth) {
+      return res.status(401).json({ error: error.message, requiresReauth: true });
+    }
     res.status(500).json({ error: "Failed to fetch videos." });
   }
 };
@@ -278,6 +323,9 @@ export const getChannelDetails = async (req, res) => {
     res.json(data.items[0]);
   } catch (error) {
     console.error("YouTube Channel Details Error:", error.message);
+    if (error.requiresReauth) {
+      return res.status(401).json({ error: error.message, requiresReauth: true });
+    }
     res.status(500).json({ error: "Failed to fetch channel details." });
   }
 };

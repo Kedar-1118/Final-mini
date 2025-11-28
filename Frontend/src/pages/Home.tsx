@@ -106,6 +106,20 @@ export function Home() {
             };
           }
         } catch (e) {
+          // Check if requires reauth and redirect to OAuth
+          if (e instanceof Error && 'response' in e && typeof (e as any).response === 'object') {
+            const responseData = (e as any).response?.data;
+            if (responseData?.requiresReauth) {
+              // Automatically redirect to OAuth
+              try {
+                const res = await API.get("youtube/auth");
+                window.location.href = res.data.url;
+                return;
+              } catch (oauthError) {
+                console.error("Error initiating YouTube OAuth:", oauthError);
+              }
+            }
+          }
           // 401 or 500 likely means not connected or token expired
           console.log("YouTube not connected or error fetching stats");
         }
