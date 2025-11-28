@@ -55,7 +55,6 @@ export const registerUser = AsyncHandler(async (req, res) => {
     otp: otpCode,
     expires_at: otpExpiry,
     type: "EMAIL_VERIFICATION",
-    otpnum: `${otpCode}`,
   });
   await otpRecord.save();
 

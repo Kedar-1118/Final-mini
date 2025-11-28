@@ -23,9 +23,6 @@ const OTPSchema = new Schema(
       enum: ["EMAIL_VERIFICATION", "PASSWORD_RESET"],
       required: true,
     },
-    otpnum: {
-      type: String,
-    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
