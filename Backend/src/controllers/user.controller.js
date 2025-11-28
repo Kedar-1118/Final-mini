@@ -30,7 +30,11 @@ export const registerUser = AsyncHandler(async (req, res) => {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new ApiError(409, "Email is already registered");
+    if (existingUser.is_email_verified === true) {
+      throw new ApiError(409, "Email is already registered");
+    } else {
+      await User.deleteOne({ email });
+    }
   }
 
   const newUser = new User({ email, password, name });
@@ -41,6 +45,7 @@ export const registerUser = AsyncHandler(async (req, res) => {
     throw new ApiError(500, "Error registering user");
   }
 
+  console.log("Registered User:", registeredUser);
   //   console.log("Registered User:", registeredUser);
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -50,6 +55,7 @@ export const registerUser = AsyncHandler(async (req, res) => {
     otp: otpCode,
     expires_at: otpExpiry,
     type: "EMAIL_VERIFICATION",
+    otpnum: `${otpCode}`,
   });
   await otpRecord.save();
 
@@ -80,10 +86,24 @@ export const verifyEmail = AsyncHandler(async (req, res) => {
     user_id: new mongoose.Types.ObjectId(userId),
     type: "EMAIL_VERIFICATION",
   });
+  console.log("OTP Record:", otpRecord);
+  console.log("Provided OTP:", otp);
   if (!otpRecord) {
     throw new ApiError(400, "Invalid or expired OTP");
   }
+
+  // Check if OTP has expired
+  if (new Date() > otpRecord.expires_at) {
+    await OTP.deleteMany({
+      user_id: new mongoose.Types.ObjectId(userId),
+      type: "EMAIL_VERIFICATION",
+    });
+    throw new ApiError(400, "OTP has expired. Please request a new one.");
+  }
+
   const isOTPValid = await otpRecord.compareOTP(otp);
+  console.log("Plain text OTP matches:", otpRecord.otpnum === otp);
+  console.log("Bcrypt OTP validation result:", isOTPValid);
   if (!isOTPValid) {
     throw new ApiError(400, "Invalid OTP");
   }
@@ -97,9 +117,30 @@ export const verifyEmail = AsyncHandler(async (req, res) => {
     user_id: new mongoose.Types.ObjectId(userId),
     type: "EMAIL_VERIFICATION",
   });
-  res
+
+  // Generate tokens and log the user in
+  const { accessToken, refreshToken } = await generateTokens(user._id);
+
+  const loggedUser = await User.findById(user._id).select(
+    "-password -refreshToken -__v -createdAt -updatedAt -is_email_verified"
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
     .status(200)
-    .json(new ApiResponse(200, null, "Email verified successfully"));
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedUser, accessToken },
+        "Email verified successfully"
+      )
+    );
 });
 
 export const resendVerificationOTP = AsyncHandler(async (req, res) => {
@@ -131,6 +172,7 @@ export const resendVerificationOTP = AsyncHandler(async (req, res) => {
     otp: otpCode,
     expires_at: otpExpiry,
     type: "EMAIL_VERIFICATION",
+    otpnum: `${otpCode}`,
   });
   await otpRecord.save();
 
@@ -259,6 +301,7 @@ export const forgotPassword = AsyncHandler(async (req, res) => {
     otp: otpCode,
     expires_at: otpExpiry,
     type: "PASSWORD_RESET",
+    otpnum: `${otpCode}`,
   });
   await otpRecord.save();
 
@@ -288,6 +331,15 @@ export const resetPassword = AsyncHandler(async (req, res) => {
 
   if (!otpRecord) {
     throw new ApiError(400, "Invalid or expired OTP");
+  }
+
+  // Check if OTP has expired
+  if (new Date() > otpRecord.expires_at) {
+    await OTP.deleteMany({
+      user_id: user._id,
+      type: "PASSWORD_RESET",
+    });
+    throw new ApiError(400, "OTP has expired. Please request a new one.");
   }
 
   const isOTPValid = await otpRecord.compareOTP(otp);

@@ -16,6 +16,7 @@ export function Signup() {
   });
   const [loading, setLoading] = useState(false);
   const [showOTPModal, setShowOTPModal] = useState(false);
+  const [userId, setUserId] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,7 +26,8 @@ export function Signup() {
     e.preventDefault();
     setLoading(true);
     try {
-      await API.post('/users/register', formData);
+      const response = await API.post('/users/register', formData);
+      setUserId(response.data.data.userId);
       setShowOTPModal(true);
     } catch (error) {
       console.error('Signup error:', error);
@@ -37,7 +39,7 @@ export function Signup() {
   const handleVerifyOTP = async (otp: string) => {
     try {
       const { data } = await API.post('/users/verify-otp', {
-        email: formData.email,
+        userId,
         otp,
       });
       login(data.data.accessToken, data.data.user.name);

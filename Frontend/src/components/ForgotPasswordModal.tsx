@@ -152,6 +152,28 @@ export function ForgotPasswordModal({ isOpen, onClose }: ForgotPasswordModalProp
                                         >
                                             Verify OTP
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                setLoading(true);
+                                                setError('');
+                                                try {
+                                                    await API.post('/users/forgot-password', { email });
+                                                    setSuccess('New OTP sent to your email.');
+                                                } catch (err: unknown) {
+                                                    const errorMessage = err instanceof Error && 'response' in err && typeof (err as any).response === 'object' && (err as any).response?.data?.message
+                                                        ? (err as any).response.data.message
+                                                        : 'Failed to resend OTP.';
+                                                    setError(errorMessage);
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}
+                                            disabled={loading}
+                                            className="w-full py-2 text-pink-400 text-sm hover:text-pink-300 transition-colors disabled:opacity-50"
+                                        >
+                                            Resend OTP
+                                        </button>
                                     </div>
                                 )}
 
