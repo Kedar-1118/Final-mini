@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import axios from "axios";
 import { config } from "../config/env.config.js";
 
-async function getProfileAndPosts(username) {
+export async function getProfileAndPosts(username) {
   try {
     const headers = {
       "x-rapidapi-key": config.rapidApi.key,
