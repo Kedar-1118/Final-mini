@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import axios from "axios";
 import { config } from "../config/env.config.js";
+import { analyzeSentiment } from "../utils/aiUtils.js";
 
 export async function getProfileAndPosts(username) {
   try {
@@ -47,17 +48,22 @@ export async function getProfileAndPosts(username) {
 }
 
 async function fetchComments(username, posts = []) {
-  if (!posts.length) return [];
+  if (!posts.length) {
+    console.log("[Instagram Sentiment] No posts found to fetch comments from.");
+    return [];
+  }
 
   const allComments = [];
 
   // Limit to first 5 posts to avoid hitting API limits too hard
   const postsToFetch = posts.slice(0, 5);
+  console.log(`[Instagram Sentiment] Fetching comments for ${postsToFetch.length} posts...`);
 
   for (const post of postsToFetch) {
     if (!post.pk) continue;
 
     try {
+      console.log(`[Instagram Sentiment] Fetching comments for post ${post.pk}...`);
       const response = await axios.get(
         "https://instagram-api-fast-reliable-data-scraper.p.rapidapi.com/comments",
         {
@@ -70,6 +76,8 @@ async function fetchComments(username, posts = []) {
       );
 
       const comments = response.data?.comments || [];
+      console.log(`[Instagram Sentiment] Post ${post.pk}: Found ${comments.length} comments.`);
+
       const cleanComments = comments.map((c) => ({
         text: c.text,
         user_id: c.user_id,
@@ -79,7 +87,7 @@ async function fetchComments(username, posts = []) {
 
       allComments.push(...cleanComments);
     } catch (err) {
-      console.warn(`⚠️ Skipped post ${post.pk} due to API error`);
+      console.warn(`⚠️ Skipped post ${post.pk} due to API error:`, err.message);
     }
   }
 
@@ -108,5 +116,25 @@ export const getUserComments = AsyncHandler(async (req, res) => {
 
   return res.status(200).json(
     new ApiResponse(200, comments, "Comments fetched successfully from API")
+  );
+});
+
+export const getInstagramCommentSentiment = AsyncHandler(async (req, res) => {
+  const { username } = req.params;
+  console.log(`[Instagram Sentiment] Request for user: ${username}`);
+
+  // First get posts
+  const profileData = await getProfileAndPosts(username);
+
+  // Then get comments
+  const commentsData = await fetchComments(username, profileData.posts);
+  console.log(`[Instagram Sentiment] Fetched ${commentsData.length} comments`);
+
+  const comments = commentsData.map(c => c.text);
+
+  const analysis = await analyzeSentiment(comments);
+
+  return res.status(200).json(
+    new ApiResponse(200, analysis, "Sentiment analysis completed successfully")
   );
 });

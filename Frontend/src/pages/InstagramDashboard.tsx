@@ -26,6 +26,21 @@ export function InstagramDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [sentimentData, setSentimentData] = useState<any>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+
+  const fetchSentiment = async () => {
+    if (!username) return;
+    try {
+      setSentimentLoading(true);
+      const response = await API.get(`/instagram/user/${username}/sentiment`);
+      setSentimentData(response.data.data);
+    } catch (error) {
+      console.error('Error fetching sentiment:', error);
+    } finally {
+      setSentimentLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCurrentUser();
@@ -234,6 +249,57 @@ export function InstagramDashboard() {
                 icon={TrendingUp}
                 color="yellow"
               />
+            </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp className="text-pink-500" size={24} />
+                  Sentiment Analysis
+                </h2>
+                <button
+                  onClick={fetchSentiment}
+                  disabled={sentimentLoading}
+                  className="px-4 py-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg hover:shadow-pink-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sentimentLoading ? 'Analyzing...' : 'Analyze Sentiment'}
+                </button>
+              </div>
+
+              {sentimentData && (
+                <div className="space-y-6">
+                  <div className="bg-pink-50 dark:bg-pink-900/20 p-4 rounded-xl border border-pink-100 dark:border-pink-800">
+                    <h3 className="font-semibold text-pink-900 dark:text-pink-100 mb-2">Summary</h3>
+                    <p className="text-pink-800 dark:text-pink-200">{sentimentData.summary}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl border border-green-100 dark:border-green-800 text-center">
+                      <span className="block text-2xl font-bold text-green-600 dark:text-green-400">{sentimentData.sentimentDistribution.positive}%</span>
+                      <span className="text-sm text-green-800 dark:text-green-200">Positive</span>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                      <span className="block text-2xl font-bold text-gray-600 dark:text-gray-400">{sentimentData.sentimentDistribution.neutral}%</span>
+                      <span className="text-sm text-gray-800 dark:text-gray-200">Neutral</span>
+                    </div>
+                    <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800 text-center">
+                      <span className="block text-2xl font-bold text-red-600 dark:text-red-400">{sentimentData.sentimentDistribution.negative}%</span>
+                      <span className="text-sm text-red-800 dark:text-red-200">Negative</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Key Themes</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {sentimentData.keyThemes.map((theme: string, index: number) => (
+                        <span key={index} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm">
+                          {theme}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 border border-gray-200 dark:border-gray-800 mb-8">

@@ -11,6 +11,7 @@ import {
   uploadYoutubeVideo,
   updateYoutubeVideo,
   getChannelDetails,
+  getYoutubeCommentSentiment,
 } from "../controllers/youtube.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 
@@ -40,6 +41,7 @@ router.get("/callback", handleYoutubeOAuthCallback);
 // Analytics routes
 router.get("/analytics", verifyJWT, getYoutubeAnalytics);
 router.get("/comments", verifyJWT, getYoutubeComments);
+router.get("/sentiment", verifyJWT, getYoutubeCommentSentiment);
 router.get("/channel", verifyJWT, getChannelDetails);
 
 // Video management routes
@@ -48,4 +50,3 @@ router.post("/upload", verifyJWT, upload.single("videoFile"), uploadYoutubeVideo
 router.put("/videos/:id", verifyJWT, updateYoutubeVideo);
 
 export default router;
-
