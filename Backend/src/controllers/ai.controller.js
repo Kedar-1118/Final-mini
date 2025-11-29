@@ -55,9 +55,9 @@ export const getRecommendations = AsyncHandler(async (req, res) => {
   const profileData = await getProfileAndPosts(username);
   const posts = profileData.posts || [];
 
-  if (!posts.length) {
-    throw new ApiError(404, "No posts found for this user");
-  }
+  // if (!posts.length) {
+  //   throw new ApiError(404, "No posts found for this user");
+  // }
 
   // 2️⃣ Simplify posts and limit size for the LLM
   const simplifiedPosts = posts.slice(0, 20).map((post) => ({
