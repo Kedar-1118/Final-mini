@@ -3,6 +3,7 @@ import { createYoutubeOAuthClient } from "../utils/youtubeAuth.js";
 import { LinkedAccount } from "../models/linkedAccount.js";
 import { encrypt, decrypt } from "../utils/crypto.js";
 import { config } from "../config/env.config.js";
+import { analyzeSentiment } from "../utils/aiUtils.js";
 
 const ANALYTICS_SCOPES = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -330,3 +331,31 @@ export const getChannelDetails = async (req, res) => {
   }
 };
 
+
+export const getYoutubeCommentSentiment = async (req, res) => {
+  try {
+    const { client, channelId } = await getValidClient(req.user._id);
+    const youtube = google.youtube({ version: "v3", auth: client });
+
+    const { data } = await youtube.commentThreads.list({
+      part: "snippet",
+      allThreadsRelatedToChannelId: channelId,
+      maxResults: 50, // Fetch more for better analysis
+      order: "time",
+    });
+
+    const comments = data.items.map(
+      (item) => item.snippet.topLevelComment.snippet.textDisplay
+    );
+
+    const analysis = await analyzeSentiment(comments);
+
+    res.json(analysis);
+  } catch (error) {
+    console.error("YouTube Sentiment Error:", error.message);
+    if (error.requiresReauth) {
+      return res.status(401).json({ error: error.message, requiresReauth: true });
+    }
+    res.status(500).json({ error: "Failed to analyze YouTube comments." });
+  }
+};
